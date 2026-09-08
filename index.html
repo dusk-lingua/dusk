@@ -605,26 +605,8 @@
   window.addEventListener('load', initDuskAuth);
 
   function openGoogleChooser(){
-    if(!initDuskAuth()){
-      showMockGoogleChooser();
-      return;
-    }
-    const provider = new firebase.auth.GoogleAuthProvider();
-    firebase.auth().signInWithRedirect(provider);
+    showMockGoogleChooser();
   }
-
-  window.addEventListener('load', () => {
-    firebase.auth().getRedirectResult()
-      .then(result => {
-        if(result && result.user){
-          goTo('screen-home');
-        }
-      })
-      .catch(err => {
-        console.error('Google Redirect Error:', err);
-        showMockGoogleChooser();
-      });
-  });
 
   function showMockGoogleChooser(){
     const list = document.getElementById('gsi-account-list');
