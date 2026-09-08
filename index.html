@@ -609,29 +609,7 @@
   window.addEventListener('load', initDuskAuth);
 
   function openGoogleChooser(){
-    if(!initDuskAuth()){
-      showAuthError('Error al inicializar la autenticación.');
-      return;
-    }
-    const provider = new firebase.auth.GoogleAuthProvider();
-    provider.addScope('email');
-    provider.addScope('profile');
-    provider.setCustomParameters({ prompt: 'select_account' });
-    firebase.auth().signInWithPopup(provider)
-      .then(result => {
-        const user = result.user;
-        setGreeting(user.displayName || user.email.split('@')[0]);
-        goTo('screen-home');
-      })
-      .catch(err => {
-        console.error('Google Auth Error:', err);
-        if(err.code === 'auth/popup-closed-by-user' || err.code === 'auth/cancelled-popup-request') return;
-        if(err.code === 'auth/invalid-continue-uri'){
-          showAuthError('Error de configuración OAuth. Ve a Google Cloud Console > APIs & Services > OAuth consent screen y agrega dusk-lingua.github.io como dominio autorizado.');
-        } else {
-          showAuthError('Error con Google: ' + err.code);
-        }
-      });
+    showMockGoogleChooser();
   }
 
   function showMockGoogleChooser(){
