@@ -529,6 +529,7 @@
 
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
+<script src="https://accounts.google.com/gsi/client" async defer></script>
 
 <!-- ============ GOOGLE ACCOUNT CHOOSER (mock) ============ -->
 <div class="gsi-overlay" id="gsi-overlay">
@@ -609,7 +610,25 @@
   window.addEventListener('load', initDuskAuth);
 
   function openGoogleChooser(){
-    showMockGoogleChooser();
+    if(!initDuskAuth()){
+      showAuthError('Error al inicializar la autenticación.');
+      return;
+    }
+    const provider = new firebase.auth.GoogleAuthProvider();
+    provider.addScope('email');
+    provider.addScope('profile');
+    provider.setCustomParameters({ prompt: 'select_account' });
+    firebase.auth().signInWithPopup(provider)
+      .then(result => {
+        const user = result.user;
+        setGreeting(user.displayName || user.email.split('@')[0]);
+        goTo('screen-home');
+      })
+      .catch(err => {
+        console.error('Google Auth Error:', err);
+        if(err.code === 'auth/popup-closed-by-user' || err.code === 'auth/cancelled-popup-request') return;
+        showAuthError('No se pudo iniciar sesión con Google. Error: ' + err.code);
+      });
   }
 
   function showMockGoogleChooser(){
