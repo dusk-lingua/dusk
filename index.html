@@ -606,29 +606,23 @@
 
   function openGoogleChooser(){
     if(!initDuskAuth()){
-      showMockGoogleChooser();
+      showAuthError('Error al inicializar la autenticación.');
       return;
     }
     const provider = new firebase.auth.GoogleAuthProvider();
-    firebase.auth().signInWithRedirect(provider);
-  }
-
-  function handleGoogleRedirect(){
-    if(!initDuskAuth()) return;
-    firebase.auth().getRedirectResult()
+    provider.setCustomParameters({ prompt: 'select_account' });
+    firebase.auth().signInWithPopup(provider)
       .then(result => {
-        if(result && result.user){
-          setGreeting(result.user.displayName || result.user.email.split('@')[0]);
-          goTo('screen-home');
-        }
+        const user = result.user;
+        setGreeting(user.displayName || user.email.split('@')[0]);
+        goTo('screen-home');
       })
       .catch(err => {
         console.error('Google Auth Error:', err);
-        showAuthError('Error con Google: ' + (err.message || err.code));
+        if(err.code === 'auth/popup-closed-by-user' || err.code === 'auth/cancelled-popup-request') return;
+        showAuthError('No se pudo iniciar sesión con Google. Verifica la configuración de Firebase.');
       });
   }
-
-  window.addEventListener('load', handleGoogleRedirect);
 
   function showMockGoogleChooser(){
     const list = document.getElementById('gsi-account-list');
