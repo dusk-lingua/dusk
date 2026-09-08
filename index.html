@@ -610,27 +610,21 @@
       return;
     }
     const provider = new firebase.auth.GoogleAuthProvider();
-    firebase.auth().signInWithPopup(provider)
+    firebase.auth().signInWithRedirect(provider);
+  }
+
+  window.addEventListener('load', () => {
+    firebase.auth().getRedirectResult()
       .then(result => {
-        goTo('screen-home');
+        if(result && result.user){
+          goTo('screen-home');
+        }
       })
       .catch(err => {
-        console.error('Google Auth Error:', err);
-        if(!err || !err.code) { showMockGoogleChooser(); return; }
-        if(err.code === 'auth/popup-closed-by-user' || err.code === 'auth/cancelled-popup-request') return;
-        if(err.code === 'auth/invalid-continue-uri'){ showMockGoogleChooser(); return; }
-        if(err.code === 'auth/operation-not-supported-in-this-environment'){
-          showAuthError('Debes abrir la página desde un servidor web (no desde archivo local). Ejecuta: python serve.py');
-          return;
-        }
-        if(err.code === 'auth/operation-not-allowed'){
-          showAuthError('Google no está habilitado. Ve a Firebase Console > Authentication > Sign-in method y habilita Google.');
-          return;
-        }
-        if(err.code === 'auth/unauthorized-domain'){ showMockGoogleChooser(); return; }
-        showAuthError('Error con Google: ' + err.code + '. ' + (err.message || ''));
+        console.error('Google Redirect Error:', err);
+        showMockGoogleChooser();
       });
-  }
+  });
 
   function showMockGoogleChooser(){
     const list = document.getElementById('gsi-account-list');
