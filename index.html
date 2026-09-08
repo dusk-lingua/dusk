@@ -605,8 +605,30 @@
   window.addEventListener('load', initDuskAuth);
 
   function openGoogleChooser(){
-    showMockGoogleChooser();
+    if(!initDuskAuth()){
+      showMockGoogleChooser();
+      return;
+    }
+    const provider = new firebase.auth.GoogleAuthProvider();
+    firebase.auth().signInWithRedirect(provider);
   }
+
+  function handleGoogleRedirect(){
+    if(!initDuskAuth()) return;
+    firebase.auth().getRedirectResult()
+      .then(result => {
+        if(result && result.user){
+          setGreeting(result.user.displayName || result.user.email.split('@')[0]);
+          goTo('screen-home');
+        }
+      })
+      .catch(err => {
+        console.error('Google Auth Error:', err);
+        showAuthError('Error con Google: ' + (err.message || err.code));
+      });
+  }
+
+  window.addEventListener('load', handleGoogleRedirect);
 
   function showMockGoogleChooser(){
     const list = document.getElementById('gsi-account-list');
